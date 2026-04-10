@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>全方位獵股雷達 - 測試</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000; /* 黑色背景讓煙火更明顯 */
+            color: #fff;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        h2 { color: #f39c12; }
+    </style>
+</head>
+<body>
+    <div id="content" style="text-align: center;">
+        <h2>全方位獵股雷達</h2>
+        <p>連線成功！沒有密碼牆了！</p>
+        </div>
+
+    <script>
+        // 初始化 Telegram Mini App
+        window.Telegram.WebApp.ready();
+        
+        // 讓 Mini App 展開到最大螢幕
+        window.Telegram.WebApp.expand();
+        
+        // 通知 Telegram 背景顏色，讓過場更順暢
+        window.Telegram.WebApp.setHeaderColor('#000000');
+        
+        // 你原本產生煙火的 JavaScript 邏輯之後可以接續寫在這裡
+    </script>
+</body>
+</html>
