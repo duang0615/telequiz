@@ -3,41 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>全方位獵股雷達 - 測試</title>
+    <title>全方位獵股雷達 - 測驗</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #000; /* 黑色背景讓煙火更明顯 */
-            color: #fff;
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #000; 
+            color: #fff; 
+            font-family: sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
         }
-        h2 { color: #f39c12; }
+        canvas { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: -1; /* 讓畫布在文字後方 */
+        }
+        h2 { color: #f39c12; z-index: 1; text-shadow: 2px 2px 4px #000; }
+        p { z-index: 1; text-shadow: 1px 1px 2px #000; }
     </style>
 </head>
 <body>
-    <div id="content" style="text-align: center;">
-        <h2>全方位獵股雷達</h2>
-        <p>連線成功！沒有密碼牆了！</p>
-        </div>
+    <h2>全方位獵股雷達</h2>
+    <p>🎉 測驗準備就緒 🎉</p>
+    <canvas id="fireworks"></canvas>
 
     <script>
         // 初始化 Telegram Mini App
         window.Telegram.WebApp.ready();
-        
-        // 讓 Mini App 展開到最大螢幕
         window.Telegram.WebApp.expand();
-        
-        // 通知 Telegram 背景顏色，讓過場更順暢
         window.Telegram.WebApp.setHeaderColor('#000000');
-        
-        // 你原本產生煙火的 JavaScript 邏輯之後可以接續寫在這裡
+
+        // --- 煙火特效邏輯 ---
+        const canvas = document.getElementById('fireworks');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+        const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#f39c12'];
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 10,
+                    y: (Math.random() - 0.5) * 10
+                };
+                this.alpha = 1;
+                this.friction = 0.98; // 摩擦力
+                this.gravity = 0.2;   // 地心引力
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2, false);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+            update() {
+                this.draw();
+                this.velocity.x *= this.friction;
+                this.velocity.y *= this.friction;
+                this.velocity.y += this.gravity;
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= 0.015; // 淡出速度
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            // 留下殘影特效
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach((particle, i) => {
+                if (particle.alpha > 0) {
+                    particle.update();
+                } else {
+                    particles.splice(i, 1);
+                }
+            });
+        }
+
+        function createFirework(x, y) {
+            const particleCount = 100;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        // 自動隨機放煙火 (每 0.8 秒)
+        setInterval(() => {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height * 0.5; // 在畫面上半部爆炸
+            createFirework(x, y);
+        }, 800);
+
+        // 使用者點擊螢幕時，在點擊處放煙火
+        window.addEventListener('pointerdown', (e) => {
+            createFirework(e.clientX, e.clientY);
+        });
+
+        // 啟動動畫
+        animate();
     </script>
 </body>
 </html>
