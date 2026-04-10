@@ -21,48 +21,43 @@
 </head>
 <body>
     <h2>📝 白話可轉債 - 隨堂測驗</h2>
-    <div id="progress">準備開始...</div>
-    <div id="quiz-container">
-        </div>
+    <div id="progress">讀取題目中...</div>
+    <div id="quiz-container"></div>
 
     <script>
-        // ==========================================
-        // 🌟 你的專屬題庫區 (以後只要修改這裡就好！) 🌟
-        // ==========================================
-        const questionBank = [
-            {
-                question: "請問「可轉債」的全名是什麼？",
-                options: [
-                    { text: "可轉換公司債", score: 50 },
-                    { text: "可愛轉圈圈債券", score: 0 },
-                    { text: "可怕轉型債務", score: 0 }
-                ]
-            },
-            {
-                question: "如果看好一檔可轉債的未來發展，通常會操作什麼？",
-                options: [
-                    { text: "CBAS (可轉債資產交換)", score: 50 },
-                    { text: "直接放空股票", score: 0 },
-                    { text: "買進賣權 (Put)", score: 0 }
-                ]
-            }
-        ];
-        // ==========================================
-
-        // --- 以下是測驗引擎的核心邏輯，通常不需要動 ---
+        let questionBank = [];
         let currentQuestionIndex = 0;
         let totalScore = 0;
 
         const container = document.getElementById('quiz-container');
         const progress = document.getElementById('progress');
 
-        // 顯示目前的題目
+        // 接收 Python 傳過來的動態題庫密碼
+        const urlParams = new URLSearchParams(window.location.search);
+        const base64Data = urlParams.get('data');
+
+        if (base64Data) {
+            try {
+                // 將密碼解碼還原成題目
+                const binaryStr = atob(base64Data.replace(/-/g, '+').replace(/_/g, '/'));
+                const bytes = new Uint8Array([...binaryStr].map(char => char.charCodeAt(0)));
+                const decodedStr = new TextDecoder().decode(bytes);
+                questionBank = JSON.parse(decodedStr);
+            } catch (e) {
+                progress.innerText = "題庫解析失敗，請通知管理員。";
+                console.error(e);
+            }
+        } else {
+            progress.innerText = "沒有收到題目資料！請從 Telegram 機器人開啟。";
+        }
+
         function renderQuestion() {
-            // 如果題目都答完了，就傳送成績並關閉
+            if (questionBank.length === 0) return;
+
             if (currentQuestionIndex >= questionBank.length) {
                 container.innerHTML = "<h3 style='color:#2ecc71;'>🎉 測驗完成！計算成績中...</h3>";
                 progress.innerText = "";
-                // 將總分傳回給 Telegram 機器人
+                // 傳送總分給 Telegram
                 window.Telegram.WebApp.sendData(totalScore.toString());
                 return;
             }
@@ -70,30 +65,21 @@
             const currentQ = questionBank[currentQuestionIndex];
             progress.innerText = `目前進度：第 ${currentQuestionIndex + 1} 題 / 共 ${questionBank.length} 題`;
 
-            // 產生題目 HTML
             let html = `<div class="question">${currentQ.question}</div>`;
-            
-            // 產生選項按鈕 HTML
             currentQ.options.forEach(option => {
-                // 當按鈕被點擊時，執行 selectAnswer 並帶入該選項的分數
                 html += `<button class="btn" onclick="selectAnswer(${option.score})">${option.text}</button>`;
             });
-
             container.innerHTML = html;
         }
 
-        // 處理學員的選擇
         function selectAnswer(score) {
-            totalScore += score; // 把這題的分數加進總分
-            currentQuestionIndex++; // 進入下一題
-            renderQuestion(); // 重新繪製畫面
+            totalScore += score;
+            currentQuestionIndex++;
+            renderQuestion();
         }
 
-        // 初始化 Telegram Mini App
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
-        
-        // 網頁載入後，開始顯示第一題
         renderQuestion();
     </script>
 </body>
