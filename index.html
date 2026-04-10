@@ -3,37 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>全方位獵股雷達 - 隨堂測驗</title>
+    <title>白話可轉債 - 隨堂測驗</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { font-family: sans-serif; background-color: #2c3e50; color: white; padding: 20px; text-align: center; }
-        .question { font-size: 20px; margin-bottom: 20px; color: #f1c40f; }
+        h2 { color: #f1c40f; }
+        .question { font-size: 20px; margin: 20px 0; color: #ecf0f1; font-weight: bold; line-height: 1.5; }
         .btn { 
             display: block; width: 100%; padding: 15px; margin: 10px 0; 
             font-size: 18px; color: white; background-color: #3498db; 
             border: none; border-radius: 8px; cursor: pointer;
+            transition: background-color 0.2s;
         }
         .btn:active { background-color: #2980b9; }
+        #progress { margin-top: 10px; color: #bdc3c7; font-size: 14px; }
     </style>
 </head>
 <body>
-    <h2>📝 課後隨堂測驗</h2>
-    
+    <h2>📝 白話可轉債 - 隨堂測驗</h2>
+    <div id="progress">準備開始...</div>
     <div id="quiz-container">
-        <div class="question">Q: 請問「可轉債」的全名是什麼？</div>
-        <button class="btn" onclick="submitScore(100)">可轉換公司債 (100分)</button>
-        <button class="btn" onclick="submitScore(0)">可愛轉圈圈債券 (0分)</button>
-        <button class="btn" onclick="submitScore(0)">可怕轉型債務 (0分)</button>
-    </div>
+        </div>
 
     <script>
+        // ==========================================
+        // 🌟 你的專屬題庫區 (以後只要修改這裡就好！) 🌟
+        // ==========================================
+        const questionBank = [
+            {
+                question: "請問「可轉債」的全名是什麼？",
+                options: [
+                    { text: "可轉換公司債", score: 50 },
+                    { text: "可愛轉圈圈債券", score: 0 },
+                    { text: "可怕轉型債務", score: 0 }
+                ]
+            },
+            {
+                question: "如果看好一檔可轉債的未來發展，通常會操作什麼？",
+                options: [
+                    { text: "CBAS (可轉債資產交換)", score: 50 },
+                    { text: "直接放空股票", score: 0 },
+                    { text: "買進賣權 (Put)", score: 0 }
+                ]
+            }
+        ];
+        // ==========================================
+
+        // --- 以下是測驗引擎的核心邏輯，通常不需要動 ---
+        let currentQuestionIndex = 0;
+        let totalScore = 0;
+
+        const container = document.getElementById('quiz-container');
+        const progress = document.getElementById('progress');
+
+        // 顯示目前的題目
+        function renderQuestion() {
+            // 如果題目都答完了，就傳送成績並關閉
+            if (currentQuestionIndex >= questionBank.length) {
+                container.innerHTML = "<h3 style='color:#2ecc71;'>🎉 測驗完成！計算成績中...</h3>";
+                progress.innerText = "";
+                // 將總分傳回給 Telegram 機器人
+                window.Telegram.WebApp.sendData(totalScore.toString());
+                return;
+            }
+
+            const currentQ = questionBank[currentQuestionIndex];
+            progress.innerText = `目前進度：第 ${currentQuestionIndex + 1} 題 / 共 ${questionBank.length} 題`;
+
+            // 產生題目 HTML
+            let html = `<div class="question">${currentQ.question}</div>`;
+            
+            // 產生選項按鈕 HTML
+            currentQ.options.forEach(option => {
+                // 當按鈕被點擊時，執行 selectAnswer 並帶入該選項的分數
+                html += `<button class="btn" onclick="selectAnswer(${option.score})">${option.text}</button>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // 處理學員的選擇
+        function selectAnswer(score) {
+            totalScore += score; // 把這題的分數加進總分
+            currentQuestionIndex++; // 進入下一題
+            renderQuestion(); // 重新繪製畫面
+        }
+
+        // 初始化 Telegram Mini App
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
-
-        function submitScore(score) {
-            // 將分數轉換成字串，透過 Telegram 傳送給後端機器人
-            window.Telegram.WebApp.sendData(score.toString());
-        }
+        
+        // 網頁載入後，開始顯示第一題
+        renderQuestion();
     </script>
 </body>
 </html>
